@@ -183,7 +183,7 @@
         th {
             background-color: #f8f9fa;
             font-weight: 500;
-            color: #1a73e8;
+            color: #2e7d32;
         }
 
         tr:last-child td {
@@ -247,19 +247,47 @@
                 justify-content: center;
             }
 
+            /* Mobile table styles */
             table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
+                margin-top: 0;
             }
 
             th, td {
-                padding: 12px;
-                font-size: 14px;
+                padding: 8px 4px;
+                font-size: 13px;
             }
 
-            .backup-buttons {
-                flex-direction: column;
+            /* Adjust date column */
+            th:first-child, td:first-child {
+                max-width: 90px;
+                font-size: 12px;
+            }
+
+            /* Make amount and balance columns more compact */
+            th:nth-child(2), td:nth-child(2),
+            th:nth-child(3), td:nth-child(3) {
+                padding-left: 2px;
+                padding-right: 2px;
+            }
+
+            /* Compact delete button */
+            .delete-button {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+
+            .delete-button .material-icons {
+                font-size: 16px;
+            }
+
+            /* Adjust column widths */
+            th:nth-child(2), td:nth-child(2),
+            th:nth-child(3), td:nth-child(3) {
+                width: 20%;
+            }
+
+            th:last-child, td:last-child {
+                width: 15%;
             }
         }
 
