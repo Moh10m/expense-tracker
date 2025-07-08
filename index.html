@@ -4,126 +4,374 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Expense Tracker</title>
+    <!-- Add Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f5f5f5;
+            padding-bottom: 40px;
         }
-        .container {
+
+        .card {
             background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
         }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            color: #2e7d32;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .current-month {
+            font-weight: 500;
+            color: #2e7d32;
+            margin-bottom: 16px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        #currentDateTime {
+            color: #666;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .wallet-info {
+            background: #e8f5e9;
+            color: #2d3436;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .wallet-info h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            font-weight: 500;
+            color: #2e7d32;
+        }
+
+        .wallet-info p {
+            font-size: 16px;
+            margin: 8px 0;
+        }
+
+        /* Style for positive/negative values */
+        .positive {
+            color: #2e7d32;
+            font-weight: 500;
+        }
+
+        table .positive {
+            color: #2e7d32;
+            font-weight: 500;
+        }
+
+        .negative {
+            color: #d32f2f;
+            font-weight: 500;
+        }
+
+        table .negative {
+            color: #d32f2f;
+            font-weight: 500;
+        }
+
         .input-section {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 24px;
         }
+
         input[type="number"] {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
             flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
         }
+
+        input[type="number"]:focus {
+            border-color: #1a73e8;
+            outline: none;
+        }
+
         button {
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
+            padding: 12px 24px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
+            background-color: #2e7d32;
+            color: white;
+            font-weight: 500;
             cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
         button:hover {
-            background-color: #45a049;
+            background-color: #1b5e20;
+            transform: translateY(-1px);
         }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .archive-section {
+            margin: 24px 0;
+        }
+
+        .archive-dropdown {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            background-color: white;
+        }
+
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 24px;
+            overflow: hidden;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
+
         th, td {
-            padding: 12px;
+            padding: 16px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #e0e0e0;
         }
+
         th {
-            background-color: #f8f8f8;
+            background-color: #f8f9fa;
+            font-weight: 500;
+            color: #1a73e8;
         }
-        .wallet-info {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #e8f5e9;
-            border-radius: 4px;
+
+        tr:last-child td {
+            border-bottom: none;
         }
-        .negative {
-            color: red;
+
+        /* Keep delete button red */
+        .delete-button {
+            background-color: #d32f2f;
+            padding: 8px 16px;
+            font-size: 14px;
         }
-        .positive {
-            color: green;
+
+        .delete-button:hover {
+            background-color: #b71c1c;
         }
-        #currentDateTime {
-            margin-bottom: 15px;
-            font-size: 1.1em;
-            color: #666;
-        }
-        .loading {
-            opacity: 0.5;
-            pointer-events: none;
-        }
+
+        /* Backup section styling */
         .backup-section {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f0f6ff;
-            border-radius: 4px;
+            margin-top: 24px;
+            padding-bottom: 20px;
         }
+
         .backup-buttons {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
+
+        /* Backup buttons in green theme */
         .backup-button {
-            background-color: #2196F3;
+            background-color: #2e7d32;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .backup-button:hover {
+            background-color: #1b5e20;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .input-section {
+                flex-direction: column;
+            }
+
+            input[type="number"] {
+                width: 100%;
+            }
+
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            th, td {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .backup-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* Add animation for new entries */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .new-entry {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Loading spinner */
+        .loading {
+            opacity: 0.7;
+            position: relative;
+        }
+
+        .loading::after {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Daily Expense Tracker</h1>
+        <h1>
+            <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">account_balance_wallet</span>
+            Daily Expense Tracker
+        </h1>
+        
+        <div class="current-month" id="currentMonth"></div>
         
         <div id="currentDateTime"></div>
         
-        <div class="wallet-info">
-            <h3>Wallet Status</h3>
+        <div class="wallet-info card">
+            <h3>
+                <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">savings</span>
+                Wallet Status
+            </h3>
             <p>Current Balance: <span id="walletBalance">Loading...</span></p>
-            <p>Daily Addition: 50</p>
+            <p>Daily Addition: <strong>50</strong></p>
         </div>
 
         <div class="input-section">
             <input type="number" id="expenseAmount" placeholder="Enter amount spent">
-            <button onclick="addExpense()" id="addButton">Add Expense</button>
+            <button onclick="addExpense()" id="addButton">
+                <span class="material-icons">add_circle</span>
+                Add Expense
+            </button>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Date & Time</th>
-                    <th>Amount</th>
-                    <th>Wallet Balance</th>
-                </tr>
-            </thead>
-            <tbody id="expenseTable">
-            </tbody>
-        </table>
+        <div class="archive-section card">
+            <h3>
+                <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">history</span>
+                View Archived Months
+            </h3>
+            <select id="archiveSelect" class="archive-dropdown" onchange="loadArchivedMonth()">
+                <option value="">Current Month</option>
+            </select>
+        </div>
 
-        <div class="backup-section">
-            <h3>Backup Data</h3>
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Amount</th>
+                        <th>Balance</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseTable">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="backup-section card">
+            <h3>
+                <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">backup</span>
+                Backup Data
+            </h3>
             <div class="backup-buttons">
-                <button onclick="exportData()" class="backup-button">Export Data</button>
-                <button onclick="document.getElementById('importFile').click()" class="backup-button">Import Data</button>
+                <button onclick="exportData()" class="backup-button">
+                    <span class="material-icons">cloud_download</span>
+                    Export Data
+                </button>
+                <button onclick="document.getElementById('importFile').click()" class="backup-button">
+                    <span class="material-icons">cloud_upload</span>
+                    Import Data
+                </button>
                 <input type="file" id="importFile" style="display: none" onchange="importData(event)" accept=".json">
             </div>
         </div>
@@ -165,6 +413,12 @@
                 if (!db.objectStoreNames.contains('wallet')) {
                     db.createObjectStore('wallet', { keyPath: 'id' });
                 }
+
+                // Create archives store
+                if (!db.objectStoreNames.contains('archives')) {
+                    const archiveStore = db.createObjectStore('archives', { keyPath: 'monthKey' });
+                    archiveStore.createIndex('date', 'date');
+                }
             };
         });
 
@@ -197,6 +451,7 @@
 
                 updateTable();
                 updateWalletDisplay();
+                updateCurrentMonth();
             } catch (error) {
                 console.error('Error loading data:', error);
             }
@@ -309,12 +564,62 @@
             }
         }
 
+        async function deleteExpense(expenseId, amount) {
+            try {
+                // Delete from IndexedDB
+                const expenseStore = db.transaction('expenses', 'readwrite').objectStore('expenses');
+                await new Promise((resolve, reject) => {
+                    const request = expenseStore.delete(expenseId);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+
+                // Remove from expenses array
+                expenses = expenses.filter(exp => exp.id !== expenseId);
+
+                // Recalculate wallet balance
+                const currentDate = await getCurrentTime();
+                const dayOfMonth = currentDate.getDate();
+                
+                if (dayOfMonth >= 3) {
+                    const daysToCount = dayOfMonth - 2;
+                    walletBalance = DAILY_ADDITION * daysToCount;
+                } else {
+                    walletBalance = 0;
+                }
+
+                // Subtract all expenses except the deleted one
+                for (let expense of expenses) {
+                    walletBalance -= expense.amount;
+                }
+
+                // Update wallet in IndexedDB
+                const walletStore = db.transaction('wallet', 'readwrite').objectStore('wallet');
+                await new Promise((resolve, reject) => {
+                    const request = walletStore.put({
+                        id: 1,
+                        balance: walletBalance,
+                        lastUpdated: new Date().toISOString()
+                    });
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+
+                updateTable();
+                updateWalletDisplay();
+            } catch (error) {
+                console.error('Error deleting expense:', error);
+                alert('Error deleting expense. Please try again.');
+            }
+        }
+
         function updateTable() {
             const tableBody = document.getElementById('expenseTable');
             tableBody.innerHTML = '';
             
-            expenses.forEach(expense => {
+            expenses.forEach((expense, index) => {
                 const row = document.createElement('tr');
+                if (index === 0) row.classList.add('new-entry');
                 const date = new Date(expense.date);
                 row.innerHTML = `
                     <td>${date.toLocaleString('en-US', { timeZone: 'Asia/Riyadh' })}</td>
@@ -322,15 +627,30 @@
                     <td class="${expense.walletBalance >= 0 ? 'positive' : 'negative'}">
                         ${expense.walletBalance.toFixed(2)}
                     </td>
+                    <td>
+                        <button onclick="deleteExpense(${expense.id}, ${expense.amount})" 
+                                class="delete-button">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </td>
                 `;
                 tableBody.appendChild(row);
             });
         }
 
+        // Modify updateWalletDisplay to add color classes
         function updateWalletDisplay() {
-            const walletElement = document.getElementById('walletBalance');
-            walletElement.textContent = walletBalance.toFixed(2);
-            walletElement.className = walletBalance >= 0 ? 'positive' : 'negative';
+            const walletBalanceElement = document.getElementById('walletBalance');
+            walletBalanceElement.textContent = walletBalance.toFixed(2);
+            
+            // Remove existing classes
+            walletBalanceElement.classList.remove('positive', 'negative');
+            // Add appropriate class based on balance
+            if (walletBalance >= 0) {
+                walletBalanceElement.classList.add('positive');
+            } else {
+                walletBalanceElement.classList.add('negative');
+            }
         }
 
         // Export data to JSON file
@@ -407,10 +727,139 @@
             event.target.value = ''; // Reset file input
         }
 
+        async function checkAndArchive() {
+            const currentDate = await getCurrentTime();
+            const dayOfMonth = currentDate.getDate();
+            
+            if (dayOfMonth === 3) {
+                // Get previous month's data
+                const prevMonth = new Date(currentDate);
+                prevMonth.setMonth(prevMonth.getMonth() - 1);
+                const monthKey = `${(prevMonth.getMonth() + 1).toString().padStart(2, '0')}-${prevMonth.getFullYear()}`;
+                
+                // Filter expenses for previous month
+                const prevMonthExpenses = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return expDate.getMonth() === prevMonth.getMonth() && 
+                           expDate.getFullYear() === prevMonth.getFullYear();
+                });
+
+                if (prevMonthExpenses.length > 0) {
+                    // Save to archives
+                    const archiveStore = db.transaction('archives', 'readwrite').objectStore('archives');
+                    await new Promise((resolve, reject) => {
+                        const request = archiveStore.put({
+                            monthKey: monthKey,
+                            expenses: prevMonthExpenses,
+                            finalBalance: walletBalance,
+                            date: prevMonth.toISOString()
+                        });
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+
+                    // Clear previous month's expenses
+                    const expenseStore = db.transaction('expenses', 'readwrite').objectStore('expenses');
+                    for (const exp of prevMonthExpenses) {
+                        await new Promise((resolve, reject) => {
+                            const request = expenseStore.delete(exp.id);
+                            request.onsuccess = () => resolve();
+                            request.onerror = () => reject(request.error);
+                        });
+                    }
+
+                    // Update expenses array
+                    expenses = expenses.filter(exp => !prevMonthExpenses.includes(exp));
+                    
+                    // Reset wallet balance for new month
+                    await calculateInitialBalance();
+                    
+                    // Update display
+                    updateTable();
+                    updateWalletDisplay();
+                    await updateArchiveList();
+                }
+            }
+        }
+
+        async function updateArchiveList() {
+            const archiveStore = db.transaction('archives', 'readonly').objectStore('archives');
+            const archives = await new Promise((resolve, reject) => {
+                const request = archiveStore.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+
+            const select = document.getElementById('archiveSelect');
+            // Keep only the first option (Current Month)
+            select.innerHTML = '<option value="">Current Month</option>';
+            
+            // Add archived months
+            archives.sort((a, b) => new Date(b.date) - new Date(a.date))
+                   .forEach(archive => {
+                       const option = document.createElement('option');
+                       option.value = archive.monthKey;
+                       option.textContent = archive.monthKey;
+                       select.appendChild(option);
+                   });
+        }
+
+        async function loadArchivedMonth() {
+            const select = document.getElementById('archiveSelect');
+            const monthKey = select.value;
+
+            if (!monthKey) {
+                updateTable();
+                return;
+            }
+
+            const archiveStore = db.transaction('archives', 'readonly').objectStore('archives');
+            const archive = await new Promise((resolve, reject) => {
+                const request = archiveStore.get(monthKey);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+
+            if (archive) {
+                const tableBody = document.getElementById('expenseTable');
+                tableBody.innerHTML = '';
+                
+                archive.expenses.forEach(expense => {
+                    const row = document.createElement('tr');
+                    const date = new Date(expense.date);
+                    row.innerHTML = `
+                        <td>${date.toLocaleString('en-US', { timeZone: 'Asia/Riyadh' })}</td>
+                        <td>${expense.amount.toFixed(2)}</td>
+                        <td class="${expense.walletBalance >= 0 ? 'positive' : 'negative'}">
+                            ${expense.walletBalance.toFixed(2)}
+                        </td>
+                        <td>
+                            <button disabled class="delete-button" style="background-color: #9e9e9e;">
+                                <span class="material-icons">archive</span>
+                            </button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        function updateCurrentMonth() {
+            const now = new Date();
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('currentMonth').textContent = 
+                `Current Month: ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+        }
+
         // Initialize when page loads
         async function initialize() {
             await loadData();
+            await checkAndArchive();
+            await updateArchiveList();
+            updateCurrentMonth();
             setInterval(getCurrentTime, 60000);
+            setInterval(checkAndArchive, 3600000); // Check every hour
         }
 
         // Start the application
