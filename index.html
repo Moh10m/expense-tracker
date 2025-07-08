@@ -455,15 +455,7 @@
             try {
                 await dbPromise;
                 
-                // Load expenses
-                const expenseStore = db.transaction('expenses', 'readonly').objectStore('expenses');
-                expenses = await new Promise((resolve, reject) => {
-                    const request = expenseStore.getAll();
-                    request.onsuccess = () => resolve(request.result);
-                    request.onerror = () => reject(request.error);
-                });
-
-                // Load wallet balance
+                // Load wallet balance first
                 const walletStore = db.transaction('wallet', 'readonly').objectStore('wallet');
                 const walletData = await new Promise((resolve, reject) => {
                     const request = walletStore.get(1);
@@ -477,8 +469,23 @@
                     await calculateInitialBalance();
                 }
 
-                updateTable();
+                // Load and sort expenses
+                const expenseStore = db.transaction('expenses', 'readonly').objectStore('expenses');
+                const loadedExpenses = await new Promise((resolve, reject) => {
+                    const request = expenseStore.getAll();
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+
+                // Sort by timestamp (newest first)
+                expenses = loadedExpenses.sort((a, b) => {
+                    const dateA = new Date(a.date);
+                    const dateB = new Date(b.date);
+                    return dateB - dateA;
+                });
+
                 updateWalletDisplay();
+                updateTable();
                 updateCurrentMonth();
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -540,20 +547,6 @@
             return walletBalance;
         }
 
-        // Load expenses from IndexedDB
-        async function loadExpenses() {
-            const tx = db.transaction('expenses', 'readonly');
-            const store = tx.objectStore('expenses');
-            const request = store.getAll();
-            
-            request.onsuccess = () => {
-                expenses = request.result;
-                // Sort expenses by date in descending order (newest first)
-                expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
-                updateTable();
-            };
-        }
-
         function updateTable() {
             const tableBody = document.getElementById('expenseTable');
             tableBody.innerHTML = '';
@@ -594,8 +587,8 @@
             
             // Create new expense object
             const expense = {
-                id: Date.now(), // Use timestamp as ID
-                date: currentTime.toISOString(),
+                id: Date.now(),
+                date: currentTime.toISOString(), // Store as ISO string for consistent sorting
                 amount: amount,
                 walletBalance: walletBalance
             };
@@ -622,6 +615,9 @@
                 // Update displays
                 updateWalletDisplay();
                 updateTable();
+
+                // Scroll to top to show new entry
+                window.scrollTo(0, 0);
             } catch (error) {
                 console.error('Error adding expense:', error);
                 expenses.shift(); // Remove from array if save failed
@@ -630,51 +626,36 @@
             }
         }
 
-        async function deleteExpense(expenseId, amount) {
+        // Delete expense function
+        async function deleteExpense(id, amount) {
+            // Add the amount back to wallet balance
+            walletBalance += amount;
+            
+            // Remove from expenses array
+            expenses = expenses.filter(expense => expense.id !== id);
+            
+            // Update IndexedDB
+            const tx = db.transaction(['expenses', 'wallet'], 'readwrite');
+            const expenseStore = tx.objectStore('expenses');
+            const walletStore = tx.objectStore('wallet');
+            
             try {
                 // Delete from IndexedDB
-                const expenseStore = db.transaction('expenses', 'readwrite').objectStore('expenses');
-                await new Promise((resolve, reject) => {
-                    const request = expenseStore.delete(expenseId);
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
+                await expenseStore.delete(id);
+                await walletStore.put({
+                    id: 1,
+                    balance: walletBalance,
+                    lastUpdated: new Date().toISOString()
                 });
-
-                // Remove from expenses array
-                expenses = expenses.filter(exp => exp.id !== expenseId);
-
-                // Recalculate wallet balance
-                const currentDate = await getCurrentTime();
-                const dayOfMonth = currentDate.getDate();
                 
-                if (dayOfMonth >= 3) {
-                    const daysToCount = dayOfMonth - 2;
-                    walletBalance = DAILY_ADDITION * daysToCount;
-                } else {
-                    walletBalance = 0;
-                }
-
-                // Subtract all expenses except the deleted one
-                for (let expense of expenses) {
-                    walletBalance -= expense.amount;
-                }
-
-                // Update wallet in IndexedDB
-                const walletStore = db.transaction('wallet', 'readwrite').objectStore('wallet');
-                await new Promise((resolve, reject) => {
-                    const request = walletStore.put({
-                        id: 1,
-                        balance: walletBalance,
-                        lastUpdated: new Date().toISOString()
-                    });
-                    request.onsuccess = () => resolve();
-                    request.onerror = () => reject(request.error);
-                });
-
-                updateTable();
+                // Update displays
                 updateWalletDisplay();
+                updateTable();
             } catch (error) {
                 console.error('Error deleting expense:', error);
+                // Restore state if delete failed
+                expenses.push(expense);
+                walletBalance -= amount;
                 alert('Error deleting expense. Please try again.');
             }
         }
