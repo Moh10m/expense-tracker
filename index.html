@@ -452,34 +452,75 @@
 
         async function checkDailyAddition() {
             const currentDate = await getCurrentTime();
-            const walletStore = db.transaction('wallet', 'readonly').objectStore('wallet');
-            const walletData = await new Promise((resolve, reject) => {
-                const request = walletStore.get(1);
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-
-            if (walletData) {
-                const lastUpdated = new Date(walletData.lastUpdated);
-                const daysSinceLastUpdate = Math.floor((currentDate - lastUpdated) / (1000 * 60 * 60 * 24));
+            
+            // Get the latest expense entry to find the last activity date
+            let lastActivityDate;
+            if (expenses.length > 0) {
+                lastActivityDate = new Date(expenses[0].date); // expenses are already sorted newest first
+            } else {
+                // If no expenses, check wallet data
+                const walletStore = db.transaction('wallet', 'readonly').objectStore('wallet');
+                const walletData = await new Promise((resolve, reject) => {
+                    const request = walletStore.get(1);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
                 
-                if (daysSinceLastUpdate >= 1) {
-                    // Add daily amount for each missed day
-                    walletBalance += DAILY_ADDITION * daysSinceLastUpdate;
-                    
-                    // Update wallet in database
-                    const walletStore = db.transaction('wallet', 'readwrite').objectStore('wallet');
-                    await new Promise((resolve, reject) => {
-                        const request = walletStore.put({
-                            id: 1,
-                            balance: walletBalance,
-                            lastUpdated: currentDate.toISOString()
-                        });
-                        request.onsuccess = () => resolve();
-                        request.onerror = () => reject(request.error);
+                if (walletData) {
+                    lastActivityDate = new Date(walletData.lastUpdated);
+                } else {
+                    // If no wallet data either, initialize with current date
+                    lastActivityDate = currentDate;
+                    await calculateInitialBalance();
+                    return;
+                }
+            }
+
+            // Reset hours, minutes, seconds to compare only dates
+            lastActivityDate.setHours(0, 0, 0, 0);
+            const compareDate = new Date(currentDate);
+            compareDate.setHours(0, 0, 0, 0);
+
+            // Calculate days difference
+            const daysSinceLastActivity = Math.floor((compareDate - lastActivityDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysSinceLastActivity >= 1) {
+                // Add daily amount for each missed day
+                const additionAmount = DAILY_ADDITION * daysSinceLastActivity;
+                walletBalance += additionAmount;
+                
+                // Create a system entry to record the daily addition
+                const systemEntry = {
+                    id: Date.now(),
+                    date: currentDate.toISOString(),
+                    amount: -additionAmount, // Negative amount to show as addition
+                    walletBalance: walletBalance,
+                    isSystemEntry: true // Flag to identify system-generated entries
+                };
+                
+                // Add to beginning of expenses array
+                expenses.unshift(systemEntry);
+                
+                // Update database
+                const tx = db.transaction(['expenses', 'wallet'], 'readwrite');
+                const expenseStore = tx.objectStore('expenses');
+                const walletStore = tx.objectStore('wallet');
+                
+                try {
+                    await expenseStore.add(systemEntry);
+                    await walletStore.put({
+                        id: 1,
+                        balance: walletBalance,
+                        lastUpdated: currentDate.toISOString()
                     });
                     
+                    // Update displays
                     updateWalletDisplay();
+                    updateTable();
+                } catch (error) {
+                    console.error('Error updating daily addition:', error);
+                    expenses.shift(); // Remove from array if save failed
+                    walletBalance -= additionAmount; // Restore wallet balance
                 }
             }
         }
@@ -582,6 +623,7 @@
             return walletBalance;
         }
 
+        // Modify updateTable to handle system entries
         function updateTable() {
             const tableBody = document.getElementById('expenseTable');
             tableBody.innerHTML = '';
@@ -590,19 +632,36 @@
                 const row = document.createElement('tr');
                 if (index === 0) row.classList.add('new-entry');
                 const date = new Date(expense.date);
-                row.innerHTML = `
-                    <td>${date.toLocaleString('en-US', { timeZone: 'Asia/Riyadh' })}</td>
-                    <td>${expense.amount.toFixed(2)}</td>
-                    <td class="${expense.walletBalance >= 0 ? 'positive' : 'negative'}">
-                        ${expense.walletBalance.toFixed(2)}
-                    </td>
-                    <td>
-                        <button onclick="deleteExpense(${expense.id}, ${expense.amount})" 
-                                class="delete-button">
-                            <span class="material-icons">delete</span>
-                        </button>
-                    </td>
-                `;
+                
+                // Handle system entries differently
+                if (expense.isSystemEntry) {
+                    row.innerHTML = `
+                        <td>${date.toLocaleString('en-US', { timeZone: 'Asia/Riyadh' })}</td>
+                        <td class="positive">+${(-expense.amount).toFixed(2)} (Daily)</td>
+                        <td class="${expense.walletBalance >= 0 ? 'positive' : 'negative'}">
+                            ${expense.walletBalance.toFixed(2)}
+                        </td>
+                        <td>
+                            <button disabled class="delete-button" style="background-color: #2e7d32;">
+                                <span class="material-icons">update</span>
+                            </button>
+                        </td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td>${date.toLocaleString('en-US', { timeZone: 'Asia/Riyadh' })}</td>
+                        <td>${expense.amount.toFixed(2)}</td>
+                        <td class="${expense.walletBalance >= 0 ? 'positive' : 'negative'}">
+                            ${expense.walletBalance.toFixed(2)}
+                        </td>
+                        <td>
+                            <button onclick="deleteExpense(${expense.id}, ${expense.amount})" 
+                                    class="delete-button">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </td>
+                    `;
+                }
                 tableBody.appendChild(row);
             });
         }
