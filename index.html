@@ -450,6 +450,40 @@
             };
         });
 
+        async function checkDailyAddition() {
+            const currentDate = await getCurrentTime();
+            const walletStore = db.transaction('wallet', 'readonly').objectStore('wallet');
+            const walletData = await new Promise((resolve, reject) => {
+                const request = walletStore.get(1);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+
+            if (walletData) {
+                const lastUpdated = new Date(walletData.lastUpdated);
+                const daysSinceLastUpdate = Math.floor((currentDate - lastUpdated) / (1000 * 60 * 60 * 24));
+                
+                if (daysSinceLastUpdate >= 1) {
+                    // Add daily amount for each missed day
+                    walletBalance += DAILY_ADDITION * daysSinceLastUpdate;
+                    
+                    // Update wallet in database
+                    const walletStore = db.transaction('wallet', 'readwrite').objectStore('wallet');
+                    await new Promise((resolve, reject) => {
+                        const request = walletStore.put({
+                            id: 1,
+                            balance: walletBalance,
+                            lastUpdated: currentDate.toISOString()
+                        });
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                    
+                    updateWalletDisplay();
+                }
+            }
+        }
+
         // Load data from IndexedDB
         async function loadData() {
             try {
@@ -465,6 +499,7 @@
 
                 if (walletData) {
                     walletBalance = walletData.balance;
+                    await checkDailyAddition(); // Check for daily additions
                 } else {
                     await calculateInitialBalance();
                 }
@@ -882,6 +917,7 @@
             updateCurrentMonth();
             setInterval(getCurrentTime, 60000);
             setInterval(checkAndArchive, 3600000); // Check every hour
+            setInterval(checkDailyAddition, 3600000); // Check for daily additions every hour
         }
 
         // Start the application
