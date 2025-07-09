@@ -1,0 +1,337 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 40px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 24px;
+    margin-bottom: 20px;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+h1 {
+    color: #2e7d32;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.current-month {
+    font-weight: 500;
+    color: #2e7d32;
+    margin-bottom: 16px;
+    font-size: 18px;
+    text-align: center;
+}
+
+#currentDateTime {
+    color: #666;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.wallet-info {
+    background: #e8f5e9;
+    color: #2d3436;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.wallet-info h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+    font-weight: 500;
+    color: #2e7d32;
+}
+
+.wallet-info p {
+    font-size: 16px;
+    margin: 8px 0;
+}
+
+/* Style for positive/negative values */
+.positive {
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+table .positive {
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+.negative {
+    color: #d32f2f;
+    font-weight: 500;
+}
+
+table .negative {
+    color: #d32f2f;
+    font-weight: 500;
+}
+
+.input-section {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+input[type="number"] {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+input[type="number"]:focus {
+    border-color: #1a73e8;
+    outline: none;
+}
+
+button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    background-color: #2e7d32;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+button:hover {
+    background-color: #1b5e20;
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.archive-section {
+    margin: 24px 0;
+}
+
+.archive-dropdown {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-bottom: 16px;
+    background-color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 24px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+th, td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 500;
+    color: #2e7d32;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Keep delete button red */
+.delete-button {
+    background-color: #d32f2f;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.delete-button:hover {
+    background-color: #b71c1c;
+}
+
+/* Backup section styling */
+.backup-section {
+    margin-top: 24px;
+    padding-bottom: 20px;
+}
+
+.backup-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Backup buttons in green theme */
+.backup-button {
+    background-color: #2e7d32;
+    flex: 1;
+    justify-content: center;
+}
+
+.backup-button:hover {
+    background-color: #1b5e20;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 16px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .input-section {
+        flex-direction: column;
+    }
+
+    input[type="number"] {
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Mobile table styles */
+    table {
+        margin-top: 0;
+    }
+
+    th, td {
+        padding: 8px 4px;
+        font-size: 13px;
+    }
+
+    /* Adjust date column */
+    th:first-child, td:first-child {
+        max-width: 90px;
+        font-size: 12px;
+    }
+
+    /* Make amount and balance columns more compact */
+    th:nth-child(2), td:nth-child(2),
+    th:nth-child(3), td:nth-child(3) {
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    /* Compact delete button */
+    .delete-button {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+
+    .delete-button .material-icons {
+        font-size: 16px;
+    }
+
+    /* Adjust column widths */
+    th:nth-child(2), td:nth-child(2),
+    th:nth-child(3), td:nth-child(3) {
+        width: 20%;
+    }
+
+    th:last-child, td:last-child {
+        width: 15%;
+    }
+}
+
+/* Add animation for new entries */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.new-entry {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Loading spinner */
+.loading {
+    opacity: 0.7;
+    position: relative;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -10px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #1a73e8;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Accessibility helper class - hides content visually but keeps it accessible to screen readers */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+} 
